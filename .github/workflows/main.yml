@@ -18,8 +18,6 @@ jobs:
         with:
           vs-version: '16.0' # Install Visual Studio 2019
 
-      - name: Run MSBuild command
-        run: msbuild /version
       - name: Setup and Build DynamoRIO (Windows)
         run: | 
           git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
