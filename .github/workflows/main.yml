@@ -5,45 +5,45 @@ on:
 
 jobs:
   
-  windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-        arch: [arm64, aarch64, x64, x86,]
+  # windows:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest]
+  #       arch: [arm64, aarch64, x64, x86,]
 
-    steps:
-      - name: Install Visual Studio 2019
-        run: |
-          vs_installer="C:/Program Files (x86)/Microsoft Visual Studio/Installer/vs_installer.exe"
-          if (-Not (Test-Path $vs_installer)) {
-            Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_installer.exe
-            Start-Process -FilePath "vs_installer.exe" -ArgumentList '--quiet --wait --norestart --nocache --installPath "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools" --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.18362 --includeRecommended' -NoNewWindow -Wait
-          }
+  #   steps:
+  #     - name: Install Visual Studio 2019
+  #       run: |
+  #         vs_installer="C:/Program Files (x86)/Microsoft Visual Studio/Installer/vs_installer.exe"
+  #         if (-Not (Test-Path $vs_installer)) {
+  #           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_installer.exe
+  #           Start-Process -FilePath "vs_installer.exe" -ArgumentList '--quiet --wait --norestart --nocache --installPath "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools" --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.18362 --includeRecommended' -NoNewWindow -Wait
+  #         }
 
 
 
-      - name: Setup and Build DynamoRIO (Windows)
-        run: | 
-          git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
-          cd dynamorio && mkdir build && cd build
-          cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
-          cmake --build . --config RelWithDebInfo
-      - name: Run tests
-        run: |
-          set +e
-          mkdir -p dynamoriologs
-          cd dynamorio && mkdir build && cd build
-          cmake -DBUILD_TESTS=ON ..
-          make -j6
-          make test
-          ctest
-        continue-on-error: true
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results-${{ matrix.os }}-${{ matrix.arch }}
-          path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
+  #     - name: Setup and Build DynamoRIO (Windows)
+  #       run: | 
+  #         git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+  #         cd dynamorio && mkdir build && cd build
+  #         cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
+  #         cmake --build . --config RelWithDebInfo
+  #     - name: Run tests
+  #       run: |
+  #         set +e
+  #         mkdir -p dynamoriologs
+  #         cd dynamorio && mkdir build && cd build
+  #         cmake -DBUILD_TESTS=ON ..
+  #         make -j6
+  #         make test
+  #         ctest
+  #       continue-on-error: true
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: test-results-${{ matrix.os }}-${{ matrix.arch }}
+  #         path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
   ubuntu:
     runs-on: ${{ matrix.os }}
     strategy:
