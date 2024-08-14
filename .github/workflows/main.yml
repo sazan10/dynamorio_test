@@ -1,0 +1,54 @@
+name: DynamoRIO Tests
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+        arch: [arm64, aarch64, x64, x86,]
+
+    steps:
+    - name: Set up for ${{ matrix.os }} on ${{ matrix.arch }}
+      run: |
+        echo "Testing on ${{ matrix.os }} with ${{ matrix.arch }} architecture"
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up environment
+      run: |
+        if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
+          sudo apt-get update
+          sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
+          # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+          # cd dynamorio && mkdir build && cd build
+        elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+          # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+          # cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
+        fi
+
+    - name: Build DynamoRIO
+      run: |
+        git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+        cd dynamorio && mkdir build && cd build
+        cmake -DBUILD_TESTS=ON ...
+        make -j6
+        make test
+        ctest
+
+    # - name: Run tests
+    #   run: |
+    #     cd build
+    #     ctest --output-on-failure
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.arch }}
+        path: build/Testing/Temporary/LastTest.log
