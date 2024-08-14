@@ -65,7 +65,7 @@ jobs:
         ctest
       continue-on-error: true
     - name: Upload test results
-       uses: actions/upload-artifact@v3
-       with:
-         name: test-results-${{ matrix.os }}-${{ matrix.arch }}
-         path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.arch }}
+        path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
