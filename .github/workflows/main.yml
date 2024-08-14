@@ -19,15 +19,23 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v3
-    - name: Install DynamoRIO
+    - name: Setup and Build DynamoRIO (linux)
       if: runner.os == 'Linux'
       run: | 
         sudo apt-get update
         sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
-    - name: Build DynamoRIO
-      run: |
-        mkdir -p dynamoriologs
         git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+    - name: Setup and Build DynamoRIO (Windows)
+      if: runner.os == 'Windows'
+      run: | 
+        git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+        cd dynamorio && mkdir build && cd build
+        cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
+        cmake --build . --config RelWithDebInfo
+    - name: Run tests
+      run: |
+        set +e
+        mkdir -p dynamoriologs
         cd dynamorio && mkdir build && cd build
         cmake -DBUILD_TESTS=ON ..
         make -j6
