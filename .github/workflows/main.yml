@@ -44,6 +44,7 @@ jobs:
   #       with:
   #         name: test-results-${{ matrix.os }}-${{ matrix.arch }}
   #         path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
+  
   ubuntu:
     runs-on: ${{ matrix.os }}
     strategy:
