@@ -27,7 +27,7 @@ jobs:
           sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
           # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
           # cd dynamorio && mkdir build && cd build
-        elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+        # elif [ "${{ matrix.os }}" == "windows-latest" ]; then
           # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
           # cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
         fi
