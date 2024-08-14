@@ -19,21 +19,14 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Set up environment
-      run: |
-        if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
-          sudo apt-get update
-          sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
-          # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
-          # cd dynamorio && mkdir build && cd build
-        # elif [ "${{ matrix.os }}" == "windows-latest" ]; then
-          # git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
-          # cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
-        fi
-
+    - name: Install DynamoRIO
+      if: runner.os == 'Linux'
+      run: | 
+        sudo apt-get update
+        sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
     - name: Build DynamoRIO
       run: |
+        mkdir -p dynamoriologs
         git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
         cd dynamorio && mkdir build && cd build
         cmake -DBUILD_TESTS=ON ...
@@ -51,4 +44,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.arch }}
-        path: build/Testing/Temporary/LastTest.log
+        path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
