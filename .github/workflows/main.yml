@@ -4,34 +4,56 @@ on:
   push:
 
 jobs:
-  build:
+  
+  windows:
     runs-on: ${{ matrix.os }}
-    
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-latest]
+        os: [windows-latest]
         arch: [arm64, aarch64, x64, x86,]
 
     steps:
-    - name: Set up for ${{ matrix.os }} on ${{ matrix.arch }}
-      run: |
-        echo "Testing on ${{ matrix.os }} with ${{ matrix.arch }} architecture"
+      - name: Install Visual Studio 2019
+        uses: actions/setup-msbuild@v1
+        with:
+          vs-version: '16.0' # Install Visual Studio 2019
 
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Run MSBuild command
+        run: msbuild /version
+      - name: Setup and Build DynamoRIO (Windows)
+        run: | 
+          git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
+          cd dynamorio && mkdir build && cd build
+          cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
+          cmake --build . --config RelWithDebInfo
+      - name: Run tests
+        run: |
+          set +e
+          mkdir -p dynamoriologs
+          cd dynamorio && mkdir build && cd build
+          cmake -DBUILD_TESTS=ON ..
+          make -j6
+          make test
+          ctest
+        continue-on-error: true
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.arch }}
+          path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+        arch: [arm64, aarch64, x64, x86,]
+    steps:  
     - name: Setup and Build DynamoRIO (linux)
       if: runner.os == 'Linux'
       run: | 
         sudo apt-get update
         sudo apt-get install cmake g++ g++-multilib doxygen git zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev
         git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
-    - name: Setup and Build DynamoRIO (Windows)
-      if: runner.os == 'Windows'
-      run: | 
-        git clone --recurse-submodules -j4 https://github.com/DynamoRIO/dynamorio.git
-        cd dynamorio && mkdir build && cd build
-        cmake -G"Visual Studio 16" -A ${{ matrix.arch }} ..
-        cmake --build . --config RelWithDebInfo
     - name: Run tests
       run: |
         set +e
@@ -42,16 +64,8 @@ jobs:
         make test
         ctest
       continue-on-error: true
-
-
-    # - name: Run tests
-    #   run: |
-    #     cd build
-    #     ctest --output-on-failure
-
     - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results-${{ matrix.os }}-${{ matrix.arch }}
-        path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
+       uses: actions/upload-artifact@v3
+       with:
+         name: test-results-${{ matrix.os }}-${{ matrix.arch }}
+         path: dynamoriologs/dynamorio-test-on-${{ matrix.os }}-under-${{ matrix.arch }}.log
