@@ -2,7 +2,6 @@ name: DynamoRIO Tests
 on:
   push:
 jobs:
-  
   # windows:
   #   runs-on: ${{ matrix.os }}
   #   strategy:
