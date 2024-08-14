@@ -1,5 +1,4 @@
 name: DynamoRIO Tests
-
 on:
   push:
 jobs:
